@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset=utf-8 />
+	<title>Map Template Browser Title</title>
+	<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+	<link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lora" rel="stylesheet">
+
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background: "whitesmoke";
+			font-family: "Noto Sans", sans-serif;
+			color: #ffffff;
+		}
+
+		h1 {
+			position: absolute;
+			margin-top: 0;
+			top: 10px;
+			left: 45px;
+			font-size: 2em;
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+			padding: 10px 15px;
+			background: #000000b0;
+			color: #ffffff;
+			border: 1px solid #ffcc00;
+			border-radius: 5px;
+			z-index: 800;
+		}
+
+		h2 {
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+		}
+
+		h2.section {
+			font-family: "Lora", serif;
+			letter-spacing: .04em;
+			color: #ffffff;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+
+		section {
+			position: absolute;
+			bottom: 0;
+			left: 10px;
+			width: 280px;
+			margin: 20px auto;
+			padding: 0 15px;
+			background: #000000b0;
+			border: 1px solid #ffcc00;
+			border-radius: 5px;
+			z-index: 800;
+		}
+
+		p {
+			font-size: .9em;
+			line-height: 1.5em;
+		}
+
+		p.section {
+			font-size: .9em;
+			line-height: 1.5em;
+			color: #ffffff;
+		}
+
+
+		a {
+			color: #ffffff;
+			border: none;
+			transition: 0.3s;
+			text-decoration: none;
+		}
+
+		.button {
+			background-color: #ffd700;
+			border-radius: 10px;
+			color: #ffffff;
+			padding: 16px 32px;
+			text-align: center;
+			font-size: 16px;
+			text-decoration: none;
+			margin: 4px 2px;
+			opacity: 0.75;
+			transition: 0.3s;
+		}
+
+		.button:hover {
+			opacity: 1;
+		}
+
+		.leaflet-tooltip {
+			max-width: 400px;
+			white-space: normal;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>Flat Top Mountain "Firetower" Ascent</h1>
+
+	<div id='map'></div>
+
+	<section>
+		<h2 class="section">About the Ascent</h2>
+
+		<p class="section">Located in Moses H. Cone Memorial Park, the Flat Top Mountain ascent is a route from Bass Lake to the summit of Flat Top Mountain. At the summit is a 40-foot tall tower, usually referred to as the "Firetower."</p>
+
+		<p class="section">The Firetower ascent is a staple workout for the Appalachian State men's cross country program. Gaining nearly 1000 feet over 5 miles, the very best runners will complete the ascent between 30 and 32 minutes, or about 6:10/mi pace.</p>
+
+		<p class="section">Along the route are several landmarks. Mouse over the landmarks to learn more about them, or click below to see the Strava segment leaderboard for the climb!</p>
+
+		<p class="button"><b><a href="https://www.strava.com/segments/7354793">Strava Leaderboard</a></b></p>
+
+		<p class="section">Map authored by Jonah Bird</p>
+
+	</section>
+
+	<script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+
+	<script src="data/route.js"></script>
+
+	<script>
+
+//options to be used when creating the map
+		var options = {
+			center: [36.15100, -81.68750],
+			zoom: 14
+		}
+
+//creation of the Leaflet map
+		var map = L.map('map', options);
+
+//request to load basemap
+
+		var Jawg_Terrain = L.tileLayer('https://{s}.tile.jawg.io/jawg-terrain/{z}/{x}/{y}{r}.png?access-token={accessToken}', {
+			attribution: '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+			minZoom: 0,
+			maxZoom: 22,
+			subdomains: 'abcd',
+			accessToken: 'ihDe2jNzbuwI58KsogUop26M52pHfsT5hT0QH9hda7gwdeSNAMogAE6SD4sqASGm'
+		}).addTo(map);
+
+		var myRoute = L.geoJson(data, {
+			filter : function(feature) {
+				if(feature.geometry.type =="LineString") {
+					return feature;
+				}
+			},
+
+			style : function(feature) {
+				return {
+					color: "#000000",
+					weight: 3,
+					opacity: 0.75,
+				}
+			},
+
+		}).addTo(map);
+
+		var myStops = L.geoJson(data, {
+			filter : function(feature) {
+				if(feature.geometry.type == "Point") {
+					return feature;
+				}
+			},
+
+			style : function(feature) {
+				return {
+					radius: 8,
+					fillColor: "#ff7800",
+					color: "#000000",
+					weight: 1,
+					opacity: 1,
+					fillOpacity: 0.8
+				}
+			},
+
+			onEachFeature : function(feature, layer) {
+				layer.bindTooltip(
+					"<h2>" +
+						feature.properties.name +
+						"</h2><p><i>" +
+						feature.properties.stats +
+						"</i></p><img src='" +
+						feature.properties.photo +
+						"' width=400/><small><br>" +
+						feature.properties.cap +
+						"</small><p>" +
+						feature.properties.descr +
+						"</p>",
+						{
+						maxWidth: "auto",
+						}
+					);
+			},
+		}).addTo(map);
+
+		//map.fitBounds(myRoute.getBounds());
+
+	</script>
+
+</body>
+
+</html>
